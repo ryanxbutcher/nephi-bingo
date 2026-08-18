@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>NEPHI Bingo — A Book of Mormon Study Game</title>
+<style>
+  :root{
+    --bg:#0e1626; --bg2:#131d31; --panel:#182440;
+    --cream:#f7f1e3; --ink:#1c2333; --gold:#d4a944; --gold2:#e8c76a;
+    --dim:#8fa1c0; --line:#26344e;
+    --cN:#3b74c9; --cE:#c0503c; --cP:#3f8f5a; --cH:#c99a2e; --cI:#7a5bbf;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 800px at 50% -10%, #1a2742 0%, var(--bg) 55%);
+    color:var(--cream); font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    min-height:100vh;
+  }
+  button{font-family:inherit; cursor:pointer}
+  .wrap{max-width:1280px; margin:0 auto; padding:14px 16px 40px}
+
+  /* ------- header ------- */
+  header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:6px 2px 14px}
+  h1{font-size:26px; margin:0; letter-spacing:2px; color:var(--gold2)}
+  h1 .n{color:var(--cream)}
+  .sub{color:var(--dim); font-size:14px; font-style:italic}
+  .hbtns{margin-left:auto; display:flex; gap:8px}
+  .ghost{background:transparent; border:1px solid var(--line); color:var(--dim);
+    border-radius:9px; padding:7px 12px; font-size:13px}
+  .ghost:hover{border-color:var(--gold); color:var(--gold2)}
+
+  /* ------- layout ------- */
+  .layout{display:grid; grid-template-columns:minmax(320px,470px) 1fr; gap:20px; align-items:start}
+  @media (max-width:940px){ .layout{grid-template-columns:1fr} }
+
+  .machine{background:linear-gradient(180deg,#141f36,#101a2d); border:1px solid var(--line);
+    border-radius:18px; padding:14px 14px 18px; text-align:center}
+  #drum{width:100%; max-width:440px; height:auto; display:block; margin:0 auto}
+  .drawrow{display:flex; gap:10px; justify-content:center; align-items:center; margin-top:6px}
+  #drawBtn{
+    background:linear-gradient(180deg,var(--gold2),var(--gold)); color:#241c05; border:none;
+    font-size:19px; font-weight:bold; letter-spacing:1px; padding:13px 34px; border-radius:12px;
+    box-shadow:0 4px 14px rgba(212,169,68,.35); transition:transform .1s;
+  }
+  #drawBtn:hover{transform:translateY(-1px)}
+  #drawBtn:disabled{filter:grayscale(.7) brightness(.6); cursor:default; transform:none}
+  .drawmeta{color:var(--dim); font-size:13px; margin-top:9px}
+
+  /* ------- flashboard ------- */
+  .flash{margin-top:14px; border-top:1px solid var(--line); padding-top:12px; text-align:left}
+  .flash h3{margin:0 0 8px; font-size:13px; color:var(--dim); letter-spacing:1.5px; text-transform:uppercase}
+  .frow{display:flex; align-items:flex-start; gap:8px; margin-bottom:6px}
+  .fletter{flex:0 0 24px; width:24px; height:24px; border-radius:50%; color:#fff; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; font-size:13px; margin-top:1px}
+  .fchips{display:flex; flex-wrap:wrap; gap:4px}
+  .chip{font-size:11px; padding:3px 7px; border-radius:8px; border:1px solid var(--line);
+    color:#5b6a85; background:#101a2d; transition:all .25s}
+  .chip.lit{color:#fff; border-color:transparent}
+  .chip.pulse{animation:chippop .5s}
+  @keyframes chippop{0%{transform:scale(.6)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+  /* ------- cards ------- */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px}
+  .card{background:var(--cream); color:var(--ink); border-radius:14px; padding:12px;
+    box-shadow:0 6px 22px rgba(0,0,0,.35); border:3px solid transparent}
+  .card.won{border-color:var(--gold); box-shadow:0 0 24px rgba(212,169,68,.45)}
+  .chead{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+  .cname{font-weight:bold; font-size:16px; cursor:pointer; border-bottom:1px dashed #b9ad92}
+  .cwon{margin-left:auto; background:var(--gold); color:#241c05; font-size:11px; font-weight:bold;
+    padding:3px 9px; border-radius:20px; letter-spacing:1px; display:none}
+  .card.won .cwon{display:inline-block}
+  .grid{display:grid; grid-template-columns:repeat(5,1fr); gap:4px}
+  .hcell{text-align:center; font-weight:bold; color:#fff; border-radius:7px; padding:5px 0; font-size:15px}
+  .cell{
+    position:relative; aspect-ratio:1; border-radius:8px; background:#fffdf6; border:1px solid #ded4bc;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-size:11px; line-height:1.15; padding:3px; cursor:pointer; user-select:none;
+    overflow:hidden; word-break:break-word;
+  }
+  @media (max-width:520px){ .cell{font-size:9.5px} }
+  .cell:hover{border-color:var(--gold)}
+  .cell.free{background:#f3e8c8; font-size:20px; flex-direction:column; gap:2px; cursor:default}
+  .cell.free small{font-size:9px; letter-spacing:1px; color:#8a7a4d}
+  .cell.marked::after{
+    content:""; position:absolute; inset:8%; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(212,169,68,.55), rgba(176,132,32,.78));
+    box-shadow:inset 0 0 0 2px rgba(120,88,18,.5);
+    animation:daub .28s cubic-bezier(.2,1.6,.5,1);
+  }
+  @keyframes daub{0%{transform:scale(.2); opacity:0}100%{transform:scale(1); opacity:1}}
+  .cell.winline{box-shadow:0 0 0 2px var(--gold), 0 0 12px rgba(212,169,68,.8); z-index:1}
+
+  /* ------- overlays ------- */
+  .ov{position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(4,9,18,.78); z-index:40; padding:16px}
+  .ov.show{display:flex}
+  .panelCard{background:var(--cream); color:var(--ink); border-radius:18px; max-width:560px; width:100%;
+    padding:26px 26px 22px; text-align:center; box-shadow:0 16px 60px rgba(0,0,0,.6);
+    animation:popin .3s cubic-bezier(.2,1.4,.5,1); max-height:92vh; overflow-y:auto}
+  @keyframes popin{0%{transform:scale(.82); opacity:0}100%{transform:scale(1); opacity:1}}
+
+  .bigball{width:118px; height:118px; border-radius:50%; margin:2px auto 10px; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:52px; font-weight:bold;
+    box-shadow:inset -8px -12px 22px rgba(0,0,0,.35), inset 8px 10px 18px rgba(255,255,255,.3),
+      0 8px 20px rgba(0,0,0,.3);
+    animation:balldrop .45s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes balldrop{0%{transform:translateY(-70px) scale(.6); opacity:0}100%{transform:none; opacity:1}}
+  .catlab{font-size:13px; letter-spacing:2px; text-transform:uppercase; color:#8a7a4d; margin-bottom:6px}
+  .answer{font-size:30px; font-weight:bold; margin:4px 0 2px}
+  .refchip{display:inline-block; background:#efe4c4; border:1px solid #d9c893; color:#6b5a26;
+    border-radius:20px; padding:5px 14px; font-size:14px; margin:8px 0 4px}
+  .story{background:#fffdf6; border:1px solid #e4dabf; border-radius:12px; padding:14px 16px;
+    font-size:16px; line-height:1.5; text-align:left; margin:12px 0 4px; font-style:italic}
+  .hinttag{font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#a08c4f; margin-bottom:4px}
+  .teachnote{font-size:12.5px; color:#948667; margin-top:10px; font-style:italic}
+  .btnrow{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:16px}
+  .gbtn{background:linear-gradient(180deg,var(--gold2),var(--gold)); border:none; color:#241c05;
+    font-size:16px; font-weight:bold; padding:11px 22px; border-radius:11px}
+  .sbtn{background:#efe9d8; border:1px solid #d5c9a8; color:#5c5233; font-size:14px;
+    padding:10px 18px; border-radius:11px}
+
+  /* setup */
+  .setupTitle{font-size:30px; letter-spacing:3px; color:#8a6d1d; margin:0 0 2px}
+  .opt2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  .tierOpt{border:2px solid #d5c9a8; border-radius:12px; padding:12px 10px; cursor:pointer; background:#fffdf6}
+  .tierOpt.sel{border-color:var(--gold); background:#f7edd0; box-shadow:0 0 0 2px rgba(212,169,68,.35)}
+  .tierOpt b{display:block; font-size:17px; margin-bottom:3px}
+  .tierOpt span{font-size:12.5px; color:#77694a; line-height:1.35; display:block}
+  .frow2{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border-top:1px solid #e4dabf; padding:10px 2px; text-align:left}
+  .frow2 label{font-size:15px}
+  .frow2 small{display:block; color:#948667; font-size:12px; margin-top:2px}
+  select,input[type=text]{font-family:inherit; font-size:14px; padding:7px 9px; border-radius:8px;
+    border:1px solid #cfc3a2; background:#fffdf6; color:var(--ink)}
+  .names{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px}
+  .tog{position:relative; width:46px; height:26px; flex:0 0 46px; appearance:none; background:#d8cdb0;
+    border-radius:20px; cursor:pointer; transition:background .2s; border:none}
+  .tog:checked{background:var(--gold)}
+  .tog::after{content:""; position:absolute; top:3px; left:3px; width:20px; height:20px;
+    background:#fff; border-radius:50%; transition:left .2s}
+  .tog:checked::after{left:23px}
+
+  /* win banner */
+  .nephiWord{font-size:56px; letter-spacing:8px; color:#8a6d1d; font-weight:bold; margin:4px 0;
+    animation:winpulse 1s infinite alternate}
+  @keyframes winpulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+  .winnames{font-size:20px; margin:6px 0 4px}
+
+  #confetti{position:fixed; inset:0; pointer-events:none; z-index:60}
+  /* player column */
+  .playerCol{display:flex; flex-direction:column; gap:16px}
+  .playerLast:empty{display:none}
+  .playerLast{display:flex; align-items:center; gap:14px;
+    background:linear-gradient(180deg,#1a2740,#131d31); border:1px solid var(--line);
+    border-radius:14px; padding:14px 16px; min-height:74px}
+  .plBall{flex:0 0 54px; width:54px; height:54px; border-radius:50%; color:#fff; font-weight:bold;
+    font-size:25px; display:flex; align-items:center; justify-content:center;
+    box-shadow:inset -4px -6px 11px rgba(0,0,0,.35), inset 4px 5px 9px rgba(255,255,255,.3);
+    animation:balldrop .4s cubic-bezier(.2,1.5,.4,1)}
+  .plText{display:flex; flex-direction:column; gap:1px; min-width:0}
+  .plLab{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--dim)}
+  .plName{font-size:22px; color:var(--cream); line-height:1.2}
+  .plRef{font-size:13px; color:var(--gold2)}
+  .plEmpty{color:var(--dim); font-style:italic; font-size:15px}
+  .playerBoard{background:linear-gradient(180deg,#141f36,#101a2d); border:1px solid var(--line);
+    border-radius:14px; padding:12px 14px}
+  .playerBoard h3{margin:0 0 8px; font-size:13px; color:var(--dim); letter-spacing:1.5px;
+    text-transform:uppercase}
+
+  /* role picker */
+  .rolelead{font-size:15px; color:#77694a; margin:14px 0 10px}
+  .roleGrid{display:grid; gap:10px; margin-bottom:6px}
+  .roleOpt{border:2px solid #d5c9a8; border-radius:12px; padding:13px 14px; cursor:pointer;
+    background:#fffdf6; text-align:left; display:grid; grid-template-columns:38px 1fr;
+    grid-template-rows:auto auto; column-gap:12px; align-items:center; transition:all .15s}
+  .roleOpt:hover{border-color:var(--gold); background:#f9f2dd; transform:translateY(-1px)}
+  .roleIcon{grid-row:1/3; font-size:26px; color:var(--gold); text-align:center}
+  .roleOpt b{font-size:18px}
+  .roleOpt span{font-size:12.5px; color:#77694a; line-height:1.35}
+  .codeIn{width:100%; font-size:26px; text-align:center; letter-spacing:3px; padding:12px;
+    font-weight:bold; color:#6b5a26; text-transform:uppercase}
+  .joinErr{color:#a8331f; font-size:13.5px; min-height:19px; margin-top:6px}
+
+  /* caller banner */
+  .joinBanner{display:none; gap:14px; align-items:stretch; margin:0 0 16px}
+  .joinBanner.on{display:flex}
+  .jbCell{flex:1; background:linear-gradient(180deg,#1a2740,#131d31); border:1px solid var(--line);
+    border-left:4px solid var(--gold); border-radius:14px; padding:10px 18px;
+    display:flex; flex-direction:column; justify-content:center}
+  .jbBall{flex:0 0 128px; text-align:center; align-items:center}
+  .jbLab{font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--dim)}
+  .jbCode{font-size:40px; font-weight:bold; letter-spacing:5px; color:var(--gold2); line-height:1.15}
+  .jbNum{font-size:40px; font-weight:bold; color:var(--cream); line-height:1.15;
+    font-variant-numeric:tabular-nums}
+  @media (max-width:620px){ .jbCode{font-size:29px; letter-spacing:3px} .jbNum{font-size:29px}
+    .jbBall{flex:0 0 92px} }
+
+  /* player sync bar */
+  .syncBar{display:none; flex-wrap:wrap; gap:12px; align-items:center; margin:0 0 16px;
+    background:linear-gradient(180deg,#1a2740,#131d31); border:1px solid var(--line);
+    border-left:4px solid var(--gold); border-radius:14px; padding:12px 16px}
+  .syncBar.on{display:flex}
+  .sbInfo{display:flex; flex-direction:column; gap:2px; margin-right:auto}
+  .sbLab{font-size:13px; color:var(--dim); letter-spacing:.5px}
+  .sbLab b{color:var(--cream); font-size:15px; letter-spacing:1.5px; font-variant-numeric:tabular-nums}
+  .sbCatch{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--dim)}
+  .sbCatch input{width:64px; text-align:center; font-size:15px; font-variant-numeric:tabular-nums}
+  #sbNext{font-size:17px; padding:11px 26px}
+
+  .help h3{margin:14px 0 4px; color:#8a6d1d}
+  .help p,.help li{font-size:14.5px; line-height:1.5; text-align:left}
+  .help ul{padding-left:20px; text-align:left}
+  footer{margin-top:26px; text-align:center; color:#3c4c68; font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>NEPHI <span class="n">BINGO</span></h1>
+    <span class="sub">A Book of Mormon study game</span>
+    <div class="hbtns">
+      <button class="ghost" id="boardToggle" style="display:none">Called list: On</button>
+      <button class="ghost" id="soundBtn">Sound: On</button>
+      <button class="ghost" id="helpBtn">How to play</button>
+      <button class="ghost" id="newBtn">New game</button>
+    </div>
+  </header>
+
+  <!-- caller: the code and ball number the room reads off this screen -->
+  <div class="joinBanner" id="joinBanner">
+    <div class="jbCell">
+      <span class="jbLab">Join with code</span>
+      <span class="jbCode" id="bannerCode">—</span>
+    </div>
+    <div class="jbCell jbBall">
+      <span class="jbLab">Ball</span>
+      <span class="jbNum" id="ballNo">0</span>
+    </div>
+  </div>
+
+  <!-- player: tap along, or type the caller's ball number to catch up -->
+  <div class="syncBar" id="syncBar">
+    <div class="sbInfo">
+      <span class="sbLab">Game <b id="sbCode">—</b></span>
+      <span class="sbLab">Ball <b id="sbBall">0</b> of 65</span>
+    </div>
+    <button class="gbtn" id="sbNext">Next ball</button>
+    <div class="sbCatch">
+      <label for="sbJump">Caller on ball</label>
+      <input type="text" id="sbJump" inputmode="numeric" placeholder="#">
+      <button class="sbtn" id="sbJumpBtn">Catch up</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="machine">
+      <canvas id="drum" width="460" height="560"></canvas>
+      <div class="drawrow">
+        <button id="drawBtn">SPIN &amp; DRAW</button>
+      </div>
+      <div class="drawmeta" id="drawMeta">—</div>
+      <div class="flash">
+        <h3>Called so far</h3>
+        <div id="flashboard"></div>
+      </div>
+    </div>
+    <div class="playerCol">
+      <div class="playerLast" id="playerLast"></div>
+      <div class="cards" id="cards"></div>
+      <div class="playerBoard" id="playerBoard">
+        <h3>Called so far</h3>
+        <div id="playerFlash"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Runs entirely offline — keep this file anywhere and open it in a browser. Space bar spins.</footer>
+</div>
+
+<!-- role picker -->
+<div class="ov show" id="roleOv"><div class="panelCard">
+  <div class="setupTitle">NEPHI BINGO</div>
+  <div class="catlab">Names · Events · Places · Holy things · Ideas</div>
+  <p class="rolelead">Who is this device?</p>
+  <div class="roleGrid">
+    <div class="roleOpt" id="roleCaller">
+      <div class="roleIcon">◉</div><b>Caller</b>
+      <span>Run the tumbler for the room. Shows a game code everyone joins with.</span>
+    </div>
+    <div class="roleOpt" id="rolePlayer">
+      <div class="roleIcon">▦</div><b>Player</b>
+      <span>Join with the caller's code. Just your own card, on your own device.</span>
+    </div>
+    <div class="roleOpt" id="roleSolo">
+      <div class="roleIcon">⌂</div><b>All in one</b>
+      <span>Tumbler and cards together on this screen. Best for home and families.</span>
+    </div>
+  </div>
+  <div class="btnrow"><button class="sbtn" id="resumeBtn" style="display:none">Resume last game</button></div>
+</div></div>
+
+<!-- join (player) -->
+<div class="ov" id="joinOv"><div class="panelCard">
+  <div class="setupTitle" style="font-size:24px">Join the game</div>
+  <p class="rolelead">Type the code shown on the caller's screen.</p>
+  <input type="text" id="joinCode" class="codeIn" placeholder="NEPHI-0000" autocomplete="off"
+    autocapitalize="characters" spellcheck="false">
+  <div id="joinErr" class="joinErr"></div>
+  <div class="frow2"><label>Your name</label>
+    <input type="text" id="joinName" placeholder="Player" style="max-width:170px"></div>
+  <div class="frow2"><label>Card number<small>Pick a different number from your neighbour to get a different card.</small></label>
+    <input type="text" id="joinCardNo" value="1" style="max-width:70px; text-align:center"></div>
+  <div class="frow2"><label>Which set of clues?</label>
+    <select id="joinTier"><option value="primary">Primary</option><option value="study">Study</option></select></div>
+  <div class="teachnote">Ask the caller which one they picked — it has to match.</div>
+  <div class="btnrow">
+    <button class="gbtn" id="joinBtn">Join</button>
+    <button class="sbtn" id="joinBack">Back</button>
+  </div>
+</div></div>
+
+<!-- setup (caller / solo) -->
+<div class="ov" id="setupOv"><div class="panelCard">
+  <div class="setupTitle" id="setupTitle">NEPHI BINGO</div>
+  <div class="catlab" id="setupSub">Names · Events · Places · Holy things · Ideas</div>
+  <div class="opt2">
+    <div class="tierOpt sel" id="tierPrimary"><b>Primary</b>
+      <span>For children &amp; families. Friendly stories, well-known people and places.</span></div>
+    <div class="tierOpt" id="tierStudy"><b>Study</b>
+      <span>For youth &amp; adult classes. Deeper cuts, doctrine, and direct scripture.</span></div>
+  </div>
+  <div class="frow2"><label>Win pattern</label>
+    <select id="patternSel">
+      <option value="line">Any line (row, column, diagonal)</option>
+      <option value="x">The X (both diagonals)</option>
+      <option value="corners">Four corners</option>
+      <option value="blackout">Blackout (whole card)</option>
+    </select></div>
+  <div id="soloOnly">
+    <div class="frow2"><label>Cards on this screen</label>
+      <select id="playerSel"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+    <div class="names" id="nameInputs"></div>
+  </div>
+  <div class="frow2"><label>Guess-first mode<small>Show hints before the answer — the class guesses, you reveal when ready.</small></label>
+    <input type="checkbox" class="tog" id="guessTog"></div>
+  <div class="frow2" id="proveRow"><label>Prove-it mode<small>To claim a win, tell the class one thing about each square in your line.</small></label>
+    <input type="checkbox" class="tog" id="proveTog" checked></div>
+  <div class="btnrow">
+    <button class="gbtn" id="startBtn">Start the game</button>
+    <button class="sbtn" id="setupBack">Back</button>
+  </div>
+</div></div>
+
+<!-- reveal -->
+<div class="ov" id="revealOv"><div class="panelCard" id="revealCard"></div></div>
+<!-- prove-it -->
+<div class="ov" id="proveOv"><div class="panelCard" id="proveCard"></div></div>
+<!-- win -->
+<div class="ov" id="winOv"><div class="panelCard">
+  <div class="nephiWord">N·E·P·H·I!</div>
+  <div class="winnames" id="winNames"></div>
+  <div class="teachnote">Verified against the balls that have been called.</div>
+  <div class="btnrow">
+    <button class="gbtn" id="keepBtn">Keep playing</button>
+    <button class="sbtn" id="winNewBtn">New game</button>
+  </div>
+</div></div>
+<!-- help -->
+<div class="ov" id="helpOv"><div class="panelCard help">
+  <div class="setupTitle" style="font-size:22px">How to play</div>
+  <h3>The turn</h3>
+  <p>Spin the tumbler. A ball drops and shows what was called — for example <b>H&nbsp;·&nbsp;The Liahona</b>. Everyone who has that square taps it (or marks a printed copy). That's a full turn: nobody needs to know anything to play.</p>
+  <h3>The learning (your choice, every ball)</h3>
+  <ul>
+    <li><b>The story</b> — every ball has a short story and a scripture reference. Read it aloud, discuss it, or skip it. Depth is a dial, not a gate.</li>
+    <li><b>Guess-first mode</b> — the ball shows a hint before the answer. Let the class guess; tap for a clearer hint or reveal whenever you like.</li>
+    <li><b>Prove-it mode</b> — to claim a win, the winner (with the class's help) tells one thing about each square in their line. The reference is on screen as a backup.</li>
+  </ul>
+  <h3>Playing across several devices</h3>
+  <p>One device is the <b>Caller</b> — it runs the tumbler and shows a game code. Everyone else opens the same page, picks <b>Player</b>, and types that code. Each player gets their own card on their own screen and sees nothing but their card and the called list.</p>
+  <p>There is no network involved: the code itself decides both the cards and the order the balls come out, so every device works out the same game. That means a player's screen only needs to know <b>which ball number</b> the caller is on. Tap <b>Next ball</b> each time the caller draws — and if you lose your place, read the big ball number off the caller's screen, type it in, and tap <b>Catch up</b>.</p>
+  <p>Players who want a different card from their neighbour just pick a different <b>card number</b> when joining. Everyone must choose the same clue set (Primary or Study) as the caller.</p>
+  <h3>The card</h3>
+  <p>Columns spell <b>N·E·P·H·I</b>: <b>N</b>ames, <b>E</b>vents, <b>P</b>laces, <b>H</b>oly things, <b>I</b>deas. Each ball is tagged with its column letter, so players only search one column of five squares. Center is free — it holds Christ.</p>
+  <div class="btnrow"><button class="gbtn" id="helpClose">Got it</button></div>
+</div></div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+"use strict";
+/* ============================= CONTENT ==================================
+   Item: [full name, short (card cell), hint 1 (vague), hint 2 / story, reference]
+   Direct quotes verified against churchofjesuschrist.org, Aug 2026.       */
+const COLS = ["N","E","P","H","I"];
+const CATNAME = {N:"Names", E:"Events", P:"Places", H:"Holy Things", I:"Ideas"};
+const CATCOLOR = {N:"#3b74c9", E:"#c0503c", P:"#3f8f5a", H:"#c99a2e", I:"#7a5bbf"};
+
+const DATA = {
+primary: {
+N: [
+["Nephi","Nephi","I was the youngest brother, but I never murmured.","With the Lord's help, he built a ship to carry his family across the sea — even when his brothers laughed.","1 Nephi 17–18"],
+["Lehi","Lehi","I am a father who followed a dream.","The Lord warned this prophet in a dream to take his family and leave Jerusalem.","1 Nephi 2"],
+["Sariah","Sariah","I am a mother who waited and worried in the wilderness.","A faithful mother who rejoiced and testified when her sons came safely back from Jerusalem.","1 Nephi 5"],
+["Alma the Younger","Alma the Younger","I once fought against the very church I later led.","An angel spoke with a voice of thunder to stop this young man from destroying the Church.","Mosiah 27"],
+["King Benjamin","King Benjamin","I am a king who worked with my own hands.","A beloved king who taught his gathered people from a tall tower, so he would never be a burden to them.","Mosiah 2"],
+["Abinadi","Abinadi","I am a prophet who stood alone before a king.","This brave prophet kept teaching about Christ even when wicked King Noah threatened him with fire.","Mosiah 11–17"],
+["Ammon","Ammon","I am a missionary with a sling and a sword.","A missionary who defended King Lamoni's sheep at the waters of Sebus — and won the king's heart.","Alma 17–18"],
+["Captain Moroni","Capt. Moroni","I am a soldier who fought only to defend.","He tore his coat and raised it on a pole to rally his people to defend their families and their freedom.","Alma 46"],
+["Samuel the Lamanite","Samuel","I preached from a place no one could reach.","He prophesied of Christ's birth from the top of a city wall — and the arrows could not hit him.","Helaman 13–16"],
+["Mormon","Mormon","I am a prophet-general who edited this whole book.","He gathered a thousand years of records and wrote them onto one set of golden plates.","Words of Mormon 1"],
+["Moroni","Moroni","I was the last one left.","The last writer in the book — he wandered alone for safety and buried the golden plates in a hill.","Moroni 10"],
+["Jesus Christ","Jesus Christ","I am the reason this book was written.","After His resurrection, He came down from heaven and visited the people in the promised land.","3 Nephi 11"],
+["Enos","Enos","I went hunting and came home changed.","While hunting in the forest, he prayed all day and into the night — and heard that his sins were forgiven.","Enos 1"]
+],
+E: [
+["Leaving Jerusalem","Leaving Jerusalem","A family walked away from everything they owned.","Lehi's family left their home, their gold, and their silver, and departed into the wilderness because the Lord warned them.","1 Nephi 2"],
+["Getting the Brass Plates","Brass Plates Quest","Three tries and an angel — a night mission in the city.","Nephi went into Jerusalem at night, led by the Spirit, not knowing beforehand the things he should do.","1 Nephi 3–4"],
+["Lehi's Dream","Lehi's Dream","A tree, a river, a rod, and a strange building.","A dream of a mist of darkness, a rod of iron, and a tree with fruit that was sweet above all.","1 Nephi 8"],
+["Building the Ship","Building the Ship","Everyone laughed at this construction project.","Nephi made his own tools from ore and built a ship — not after the manner of men, but as the Lord showed him.","1 Nephi 17–18"],
+["Crossing the Sea","Crossing the Sea","A storm, a mutiny, and a compass that stopped working.","A terrible storm raged for four days — and it only calmed when the brothers untied the one they had bound.","1 Nephi 18"],
+["Baptisms at the Waters of Mormon","Waters of Mormon","Promises made beside a forest pool.","In a forest by a beautiful pool, believers promised to bear one another's burdens and were baptized.","Mosiah 18"],
+["Alma's People Escape","Alma's Escape","The guards fell asleep at exactly the right time.","The Lord made their heavy burdens feel light — then a deep sleep came upon the guards, and His people slipped away.","Mosiah 24"],
+["The 2,000 Stripling Warriors","2,000 Warriors","Young men whose mothers taught them not to doubt.","Young soldiers who believed what their mothers taught: if they did not doubt, God would deliver them. Every one survived.","Alma 56–57"],
+["The Night Without Darkness","Night w/o Darkness","The sun went down, but the light stayed.","The sun set, but it stayed as light as day — and a new star appeared, just as Samuel had said.","3 Nephi 1"],
+["Christ Appears at the Temple","Christ Appears","A voice from heaven, then a Man in white descending.","A voice said, 'Behold my Beloved Son' — and the risen Savior came down and let every person feel the prints in His hands.","3 Nephi 11"],
+["Christ Blesses the Children","Blessing Children","He blessed them one by one, and angels came.","He took the little children one by one, blessed them, and prayed for them — and angels came down in fire around them.","3 Nephi 17"],
+["King Lamoni Believes","Lamoni Believes","A king fell as if dead — then rose to testify.","After Ammon taught him, this king fell to the earth as if dead — and rose to tell his household what he had seen.","Alma 18–19"],
+["200 Years of Peace","200 Years Peace","No rich, no poor, no contention — for generations.","After the Savior's visit, the people had all things common and there were no contentions in the land for a very long time.","4 Nephi 1"]
+],
+P: [
+["Jerusalem","Jerusalem","The city everyone in this book came from.","The great city Lehi's family left behind — a city the prophets warned would be destroyed.","1 Nephi 1–2"],
+["The Valley of Lemuel","Valley of Lemuel","A campsite named for a son, beside a river named for another.","Lehi camped in this valley by a river, naming both after his two oldest sons — hoping they would be steadfast.","1 Nephi 2"],
+["Bountiful by the Sea","Old Bountiful","Fruit and honey at the end of eight hard years.","After eight years in the wilderness, the family reached this seaside land of fruit and wild honey — and started building a ship.","1 Nephi 17"],
+["The Promised Land","Promised Land","A land choice above all other lands.","The land the Lord kept and covenanted for those He would bring across the sea.","1 Nephi 18; 2 Nephi 1"],
+["Zarahemla","Zarahemla","The Nephites' great capital.","The great capital city of the Nephites for most of the book, on the banks of the river Sidon.","Omni 1"],
+["The Land of Nephi","Land of Nephi","The first Nephite home, later a wicked king's kingdom.","The Nephites' first home in the promised land — later ruled by wicked King Noah.","2 Nephi 5; Mosiah 11"],
+["The Hill Cumorah","Hill Cumorah","A hill with treasure inside — but not gold for spending.","The hill where Moroni hid the golden plates — and where Joseph Smith received them centuries later.","Mormon 6; JS—History 1"],
+["The Temple in Bountiful","Temple Bountiful","The gathering place where a still, small voice was heard.","The people were gathered at this holy building, talking of the signs, when they heard a voice from heaven they could not understand at first.","3 Nephi 11"],
+["Jershon","Jershon","A land given away as a gift of safety.","The Nephites gave this land to the converted Lamanites as a safe home, and set their armies between them and danger.","Alma 27"],
+["The Waters of Sebus","Waters of Sebus","Where the flocks were scattered — on purpose.","Where robbers scattered the king's flocks so they could steal them — and one missionary stood his ground.","Alma 17"],
+["Ammonihah","Ammonihah","A proud city destroyed in a single day.","A proud city that boasted God could not destroy it in one day — and was left desolate in one day.","Alma 9, 16"],
+["Mount Shelem","Mount Shelem","Sixteen small stones were carried to the top.","On top of this exceedingly high mountain, the brother of Jared saw the finger of the Lord touch his stones.","Ether 3"],
+["The River Sidon","River Sidon","The river where thousands were baptized.","The river that ran by Zarahemla, where Alma baptized thousands who came to hear him.","Alma 2, 4"]
+],
+H: [
+["The Liahona","Liahona","I appeared outside a tent door one morning.","A round ball of curious workmanship found at Lehi's tent door — it pointed the way when the family was faithful.","1 Nephi 16"],
+["The Brass Plates","Brass Plates","I am a family's scriptures, carried out of a doomed city.","The scriptures Nephi carried out of Jerusalem — so his family would not dwindle and perish in unbelief.","1 Nephi 4–5"],
+["The Gold Plates","Gold Plates","I waited inside a hillside for centuries.","The record this whole book comes from — buried in a hill for centuries, then translated by the gift and power of God.","Mormon 8; JS—History 1"],
+["The Iron Rod","Iron Rod","Hold on to me through the darkness.","In Lehi's dream, holding this through the mists of darkness led straight to the tree. It is the word of God.","1 Nephi 8, 15"],
+["The Tree of Life","Tree of Life","My fruit is sweeter than anything.","Its fruit was white above all and sweet above all — it is the love of God.","1 Nephi 8, 11"],
+["The Great and Spacious Building","Spacious Building","I am full of mockers, and I have no foundation.","It floated in the air, full of finely-dressed people pointing and mocking — and it fell.","1 Nephi 8, 11"],
+["The Sword of Laban","Sword of Laban","My blade is fine steel, my hilt pure gold.","A blade of the finest steel with a hilt of pure gold, kept and handed down with the sacred records.","1 Nephi 4; 2 Nephi 5"],
+["Nephi's Broken Bow","Nephi's Bow","When I broke, everyone went hungry.","When this fine steel bow broke, the family went hungry — so Nephi made a new one of wood and asked his father where to hunt.","1 Nephi 16"],
+["The Title of Liberty","Title of Liberty","I am a torn coat with writing on it.","'In memory of our God, our religion, and freedom, and our peace, our wives, and our children' — fastened to the end of a pole.","Alma 46:12"],
+["The Rameumptom","Rameumptom","I am a tower for one proud prayer a week.","A high stand where the proud said the very same prayer once a week — and never spoke of God again until next time.","Alma 31"],
+["The Sixteen Shining Stones","Shining Stones","We are sixteen small stones the Lord touched.","Small, clear stones molten out of rock — the Lord touched them one by one so they would shine in the dark barges.","Ether 3, 6"],
+["King Benjamin's Tower","Benjamin's Tower","I was built so everyone could hear a king.","Built beside the temple so a whole nation, camped in tents with their families, could hear their king's last sermon.","Mosiah 2"],
+["The Interpreters","Interpreters","We are two stones that unlock languages.","Two special stones prepared by the Lord and sealed up with the plates, so a future seer could translate.","Ether 3–4; Mosiah 28"]
+],
+I: [
+["Faith","Faith","I start as small as a seed.","Alma compared it to a seed: plant it, do not cast it out, and it will begin to swell and grow.","Alma 32"],
+["Obedience","Obedience","Nephi showed me when he went back for the plates.","'I will go and do the things which the Lord hath commanded' — because He always prepares a way.","1 Nephi 3:7"],
+["Prayer","Prayer","Enos did me all day and all night.","Enos prayed all day and into the night. Amulek taught to pray over your fields, your flocks, and in your closet.","Enos 1; Alma 34"],
+["Repentance","Repentance","I am a turning around.","Turning away from wrong and back to God — like a young man who woke after three days, born of the Spirit.","Mosiah 27"],
+["Baptism","Baptism","I am a promise made in the water.","A covenant to stand as a witness of God at all times, in all things, and in all places.","Mosiah 18"],
+["Service","Service","Serving others is really serving Someone else.","'When ye are in the service of your fellow beings ye are only in the service of your God.'","Mosiah 2:17"],
+["Joy","Joy","The reason Adam fell, says Lehi.","'Adam fell that men might be; and men are, that they might have joy.'","2 Nephi 2:25"],
+["Charity","Charity","I never fail.","The pure love of Christ. Without it, we are nothing — and it never faileth.","Moroni 7:46–47"],
+["Courage","Courage","Abinadi had me in front of a king's whole court.","Standing for the right even when standing alone — like a prophet in chains who would not take back his words.","Mosiah 13"],
+["Missionary Work","Missionary Work","Four princes traded a crown for me.","The sons of Mosiah gave up a kingdom to spend fourteen years teaching the people everyone else had given up on.","Mosiah 28; Alma 17"],
+["The Scriptures","Scriptures","Feast on me.","'Feast upon the words of Christ; for behold, the words of Christ will tell you all things what ye should do.'","2 Nephi 32:3"],
+["Humility","Humility","'Are we not all beggars?'","A great king asked, 'Are we not all beggars?' — every one of us depends on God for everything we have.","Mosiah 4:19"],
+["The Holy Ghost","Holy Ghost","I speak with a still, small voice.","'By the power of the Holy Ghost ye may know the truth of all things.'","Moroni 10:5"]
+]
+},
+study: {
+N: [
+["Jacob","Jacob","Born in the wilderness, keeper of the small plates.","He delivered Zenos's allegory of the olive trees and confounded the anti-Christ Sherem.","Jacob 5–7"],
+["King Mosiah","King Mosiah","I traded a throne for a system of judges.","He translated the Jaredite record with the interpreters, then proposed ending kingship itself in favor of judges.","Mosiah 28–29"],
+["Zeniff","Zeniff","My zeal signed a bad treaty.","'Over-zealous to inherit the land of our fathers' — his treaty with a scheming Lamanite king bound his people for three generations.","Mosiah 9"],
+["Alma the Elder","Alma the Elder","One priest believed the prophet on trial.","The one priest of Noah's court who believed Abinadi — he wrote the prophet's words and organized a church at a hidden pool.","Mosiah 17–18"],
+["Amulek","Amulek","An angel told me to feed a stranger.","A man of no small reputation in Ammonihah, called by an angel to receive a prophet — he became Alma's second witness.","Alma 8–10"],
+["Zeezrom","Zeezrom","I tried to buy a testimony with silver.","A lawyer who offered six onties of silver to deny God — later he burned with fever until healed by the very men he had accused.","Alma 11, 15"],
+["Korihor","Korihor","I demanded a sign — and got one.","The anti-Christ who demanded a sign and was struck dumb — then confessed he had always known there was a God.","Alma 30"],
+["Pahoran","Pahoran","I was falsely accused and answered gently.","Accused of treason in a blistering epistle from the battlefield, this chief judge answered without anger: he did not joy in it, but rejoiced in Moroni's greatness of heart.","Alma 60–61"],
+["Helaman","Helaman","I called two thousand soldiers my sons.","Alma's son and keeper of the records, who marched with two thousand young covenant sons he called his own.","Alma 56–58"],
+["Nephi, son of Helaman","Nephi (Helaman)","From my garden tower, I revealed a murder.","Given power that whatsoever he sealed on earth would be sealed in heaven — he revealed the chief judge's murder to a crowd at his garden.","Helaman 8–10"],
+["Ether","Ether","I watched my nation end from a cave.","The last Jaredite prophet — he watched his whole nation destroy itself from the cavity of a rock, and finished the record.","Ether 13–15"],
+["The Brother of Jared","Brother of Jared","The veil could not be kept before my faith.","His faith was so exceedingly strong that he could not be kept from beholding within the veil.","Ether 3, 12"],
+["Gideon","Gideon","I fought a king with a sword and an anti-Christ with words.","He drove King Noah to the tower with his sword, and died decades later as an aged teacher resisting Nehor.","Mosiah 19; Alma 1"]
+],
+E: [
+["The Allegory of the Olive Trees","Olive Tree Allegory","The longest chapter in the book — and it is about a vineyard.","Zenos's parable of a Lord who grafts, digs, prunes, and weeps over His vineyard, working alongside His servants to the end.","Jacob 5"],
+["The Amlicite Rebellion","Amlicite Rebellion","They marked themselves, and fulfilled prophecy doing it.","Rejected by the voice of the people, a would-be king's followers marked their own foreheads red — fulfilling the word of God with their own hands.","Alma 2–3"],
+["The Martyrs of Ammonihah","Ammonihah Martyrs","The believers burned, and the prophets were made to watch.","The believers and their scriptures were cast into fire — 'the Spirit constraineth me that I must not stretch forth mine hand.'","Alma 14"],
+["Burying the Weapons of War","Buried Weapons","They gave up war deeper than a promise — a burial.","A converted people buried their swords deep in the earth rather than risk their souls — and over a thousand knelt before their attackers.","Alma 24"],
+["The Zoramite Mission","Zoramite Mission","The poor were cast out of the synagogues they built.","Missionaries found a people who had exiled true worship — and that poverty had prepared the poor in heart to hear the word.","Alma 31–32"],
+["The Defense of the City of Noah","Defense of Noah","The weakest city became the strongest.","Moroni's ditches and works of timbers turned the weakest city into a fortress — the attacking chief captains fell at the entrance.","Alma 49"],
+["The Rise of the Gadianton Robbers","Gadianton Robbers","Secret oaths, handed down from ancient times.","A secret band whose oaths and combinations, Mormon writes, proved the overthrow and almost the entire destruction of the Nephites.","Helaman 2, 6"],
+["Nephi Seals the Heavens","The Sealed Drought","A prophet chose famine over war.","Rather than see his people perish by the sword, Nephi asked God for a famine — and rain returned only through his prayer.","Helaman 11"],
+["Samuel on the Wall","Samuel on the Wall","Stones and arrows could not touch the messenger.","They could not hit him with stones or arrows — and when he finished, he cast himself from the wall and was never heard of again among them.","Helaman 16"],
+["The Three Days of Darkness","3 Days of Darkness","No candle could be lit, and a voice spoke in the black.","A vapor of darkness so thick no candle could be lit — and out of it, a voice: 'how oft would I have gathered you as a hen gathereth her chickens.'","3 Nephi 8–10"],
+["The Sermon at the Temple","Temple Sermon","The Beatitudes, given a second time.","The sermon of the mount given again — this time by the risen Lord Himself, to a multitude who had just felt the prints in His hands.","3 Nephi 12–14"],
+["The Three Nephites","Three Nephites","Three asked to stay until He comes again.","Nine desired to come speedily into His kingdom; three desired to tarry — and were promised they should never taste of death.","3 Nephi 28"],
+["The Last Battle at Cumorah","Battle of Cumorah","Ten thousand after ten thousand fell.","Mormon watched ten thousand after ten thousand of his people fall — and mourned, 'O ye fair ones, how could ye have departed from the ways of the Lord!'","Mormon 6"]
+],
+P: [
+["The Land of First Inheritance","First Inheritance","The first tents pitched after the ocean.","Where Lehi's colony pitched their tents and put seeds into the earth after crossing the sea.","1 Nephi 18"],
+["Nahom","Nahom","A burial, mourning, and a turn to the east.","'The place which was called Nahom' — Ishmael was buried here, the daughters mourned, and the course turned nearly eastward.","1 Nephi 16–17"],
+["The Land of Lehi-Nephi","Lehi-Nephi","A homeland regained on a scheming king's terms.","Granted to Zeniff by treaty — a gift with a hook in it, for King Laman meant to bring his people into bondage.","Mosiah 9"],
+["Helam","Helam","A covenant city found by a lost army.","Alma's covenant settlement by pure waters — discovered by a lost Lamanite army guided in by the priests of Amulon.","Mosiah 23"],
+["Antionum","Antionum","The Zoramites' land, on the border toward the enemy.","Land of the Zoramites, east of Zarahemla near the seashore — its defection would strengthen the Lamanites.","Alma 31"],
+["Jershon","Jershon","The inheritance given to a people who would not fight.","'The land which we will give unto our brethren for an inheritance' — with Nephite armies covenanted to stand between them and their enemies.","Alma 27"],
+["The Narrow Neck of Land","Narrow Neck","A day and a half's journey, sea to sea.","A day and a half's journey for a Nephite, from the east to the west sea — the fortified line between Bountiful and Desolation.","Alma 22; Helaman 4"],
+["The Waters of Ripliancum","Ripliancum","'Large, or to exceed all.'","'By interpretation, is large, or to exceed all' — the Jaredites' last waters before the final hill.","Ether 15:8"],
+["The Hill Ramah","Hill Ramah","Two nations ended at me, under two names.","The Jaredite name for the same hill where Mormon would later hide up the sacred records — two nations ended at one place.","Ether 15:11"],
+["The Land of Many Waters","Many Waters","Rivers and fountains, chosen for a last stand.","'A land of many waters, rivers, and fountains' — Mormon chose it, by epistle to the Lamanite king, for his people's last gathering.","Mormon 6:4"],
+["The City of Moroni","City of Moroni","I sank into the sea at the crucifixion.","At the hour of the crucifixion, this east-coast city sank into the depths of the sea, and its inhabitants were drowned.","3 Nephi 8:9"],
+["Zarahemla of the Mulekites","Mulek's Zarahemla","Founded by a king's only surviving son.","Founded by a people who left Jerusalem with Mulek, the one surviving son of King Zedekiah — they brought no records, and their language was corrupted.","Omni 1; Helaman 8"],
+["The Hill Onidah","Hill Onidah","Where the poor in heart found Alma teaching.","Alma was teaching on this hill when a multitude of the poor in heart — cast out of the synagogues they had built — came to him.","Alma 32:4"]
+],
+H: [
+["The Small and Large Plates","Two Sets of Plates","One author, two records, one wise purpose unknown.","Two records by one author: the ministry on one, the reigns and wars on the other — kept 'for a wise purpose' Nephi did not know.","1 Nephi 9; W of M 1"],
+["The Interpreters","Interpreters","Two stones in silver bows, sealed with a vision.","Two stones fastened into two rims of a bow, sealed up with the brother of Jared's vision until the Lord's own due time.","Ether 3–4; Mosiah 8"],
+["The Sword of Laban","Sword of Laban","The pattern for many swords, wielded by kings.","Nephi made many swords after its pattern, and kings wielded it in defense of their people generations after Jerusalem.","2 Nephi 5; W of M 1"],
+["The Liahona","Liahona","'Being interpreted, a compass.'","'Our fathers called it Liahona, which is, being interpreted, a compass' — it worked according to faith, and Alma likened it to the words of Christ.","Alma 37:38–45"],
+["The Title of Liberty","Title of Liberty","A rent coat, and a sermon about Joseph's garment.","'In memory of our God, our religion, and freedom, and our peace, our wives, and our children' — with a lesson from the rent garment of Joseph.","Alma 46"],
+["The Cimeter","Cimeter","A curved blade no one has translated.","A curved blade listed among the arms of both nations from Enos to the final wars — one of the book's untranslated curiosities.","Enos 1:20; Alma 43"],
+["The Gazelem Stone","Gazelem Stone","A stone to shine secret works into light.","'I will prepare unto my servant Gazelem, a stone, which shall shine forth in darkness unto light' — to reveal secret works of darkness.","Alma 37:23"],
+["The Sealed Portion","Sealed Portion","Two-thirds withheld, waiting on faith.","The part of the record withheld — to come forth only when faith matches that of the brother of Jared.","Ether 4"],
+["Nephite Armor","Nephite Armor","Breastplates and head-plates against nakedness.","Breastplates, arm-shields, head-plates, and thick clothing — against an enemy naked save a skin girded about their loins.","Alma 43"],
+["The Rameumptom","Rameumptom","'The holy stand,' by interpretation.","'Rameumptom, which, being interpreted, is the holy stand' — one prescribed prayer, once a week, one person at a time, high above the rest.","Alma 31:21"],
+["The Stone of Coriantumr","Coriantumr's Stone","An engraved stone about a king who lived nine moons among strangers.","A large engraved stone brought to King Mosiah, telling of the last Jaredite king — who dwelt nine moons with the people of Zarahemla.","Omni 1:20–21"],
+["The Sacrament at Bountiful","Sacrament Emblems","Bread and wine from the risen Lord's own hands.","Bread broken and wine blessed by the risen Lord Himself — 'in remembrance of my body, which I have shown unto you.'","3 Nephi 18"],
+["Nephite Money","Nephite Money","Senine, seon, shum, limnah.","Senine, seon, shum, and limnah of gold; senum, amnor, ezrom, and onti of silver — a judge earned a senine for a day.","Alma 11"]
+],
+I: [
+["The Infinite Atonement","Infinite Atonement","Nothing finite could fix corruption.","'It must needs be an infinite atonement — save it should be an infinite atonement this corruption could not put on incorruption.'","2 Nephi 9:7"],
+["Opposition in All Things","Opposition","Without me, neither righteousness nor joy.","'For it must needs be, that there is an opposition in all things' — without it, neither righteousness nor happiness could be brought to pass.","2 Nephi 2:11"],
+["Justice and Mercy","Justice & Mercy","One cannot rob the other.","'What, do ye suppose that mercy can rob justice? I say unto you, Nay; not one whit' — and none but the truly penitent are saved.","Alma 42:24–25"],
+["The Experiment upon the Word","Experiment on Word","Give place, and see if the seed swells.","'Give place, that a seed may be planted in your heart' — faith begins as a desire to believe, and grows into a tree of everlasting life.","Alma 32"],
+["The Pride Cycle","Pride Cycle","Prosperity, pride, destruction, humility — repeat.","Prosperity, then pride, then destruction, then humility — 'thus we see the unsteadiness of the hearts of the children of men.'","Helaman 12"],
+["The Mighty Change of Heart","Mighty Change","Can ye feel so now?","'Have ye received his image in your countenances?… If ye have experienced a change of heart, and if ye have felt to sing the song of redeeming love — can ye feel so now?'","Alma 5:14, 26"],
+["Charity Never Faileth","Charity","Without me, ye are nothing.","'If ye have not charity, ye are nothing, for charity never faileth' — pray with all the energy of heart to be filled with this love.","Moroni 7:46–48"],
+["Grace","Grace","After all we can do.","'For we know that it is by grace that we are saved, after all we can do.'","2 Nephi 25:23"],
+["Moroni's Promise","Moroni's Promise","Ask with real intent.","'Ask with a sincere heart, with real intent, having faith in Christ' — and He will manifest the truth by the power of the Holy Ghost.","Moroni 10:4–5"],
+["This Life a Probation","Day of Probation","This life is the time.","'This life is the time for men to prepare to meet God; yea, behold the day of this life is the day for men to perform their labors.'","Alma 34:32"],
+["Small and Simple Things","Small & Simple","Great things come by me.","'By small and simple things are great things brought to pass; and small means in many instances doth confound the wise.'","Alma 37:6"],
+["Counsel with the Lord","Counsel w/ Lord","In all thy doings.","'Counsel with the Lord in all thy doings, and he will direct thee for good.'","Alma 37:37"],
+["The Doctrine of Christ","Doctrine of Christ","Faith, repentance, baptism, the Holy Ghost, endure.","Faith, repentance, baptism, the gift of the Holy Ghost, enduring to the end — the Lord's own definition of His doctrine, no more and no less.","2 Nephi 31; 3 Nephi 11"]
+]
+}
+};
+
+/* ============================= STATE ==================================== */
+const SAVE_KEY = "nephi-bingo-v1";
+let S = null;          // game state
+let busy = false;      // draw sequence in flight
+let currentItem = null;
+const $ = id => document.getElementById(id);
+
+function items(){ return DATA[S.tier]; }
+function itemById(id){ return items()[id[0]][+id.slice(1)]; } // id = "N3"
+function drawnSet(){ return new Set(S.drawn); }
+
+/* --- seeded RNG: the game code drives cards AND draw order, so every device
+   in the room derives the identical sequence with no network at all. --- */
+function hashStr(s){
+  let h=2166136261>>>0;
+  for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; }
+  return h>>>0;
+}
+function mulberry32(a){
+  return function(){
+    a|=0; a=(a+0x6D2B79F5)|0;
+    let t=Math.imul(a^(a>>>15), 1|a);
+    t=(t+Math.imul(t^(t>>>7), 61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+function shuffleSeeded(a, rnd){
+  a=a.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function shuffle(a){ return shuffleSeeded(a, Math.random); }
+
+/* Game codes: NEPHI-#### — short enough to read across a room. */
+function makeCode(){ return "NEPHI-"+String(1000+Math.floor(Math.random()*9000)); }
+function normCode(s){
+  s=(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(/^\d{4}$/.test(s)) s="NEPHI"+s;              // typed just the digits
+  const m=s.match(/^NEPHI(\d{4})$/);
+  return m ? "NEPHI-"+m[1] : null;
+}
+
+/* A card is a pure function of (code, tier, cardNumber) — so the caller's
+   device and the player's device build byte-identical cards from the code. */
+function buildCard(code, tier, cardNo, name){
+  const rnd = mulberry32(hashStr(code+"|"+tier+"|card"+cardNo));
+  const grid = Array(25).fill(null);
+  COLS.forEach((col,ci)=>{
+    const idxs = shuffleSeeded(DATA[tier][col].map((_,i)=>i), rnd).slice(0,5);
+    for(let r=0;r<5;r++) grid[r*5+ci] = col+idxs[r];
+  });
+  grid[12]="FREE";
+  const marks=Array(25).fill(false); marks[12]=true;
+  return {name, cardNo, grid, marks, won:false, winCells:[]};
+}
+/* The draw order is likewise a pure function of the code. */
+function buildOrder(code, tier){
+  const pool=[];
+  COLS.forEach(c => DATA[tier][c].forEach((_,i)=>pool.push(c+i)));
+  return shuffleSeeded(pool, mulberry32(hashStr(code+"|"+tier+"|order")));
+}
+
+function newState(opts){
+  const code = opts.code || makeCode();
+  const order = buildOrder(code, opts.tier);
+  const cards = opts.players.map((name,i)=>
+    buildCard(code, opts.tier, (opts.cardNos ? opts.cardNos[i] : i+1), name));
+  return {role:opts.role||"solo", code, tier:opts.tier, pattern:opts.pattern,
+          guess:opts.guess, prove:opts.prove, sound:opts.sound, cards,
+          drawn:[], order, showBoard: opts.showBoard!==false};
+}
+
+function save(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
+}
+function loadSaved(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s.cards || !s.order) return null;
+    return s;
+  }catch(e){ return null; }
+}
+
+/* ============================= WIN LOGIC ================================ */
+const LINES = [];
+for(let r=0;r<5;r++) LINES.push([0,1,2,3,4].map(c=>r*5+c));
+for(let c=0;c<5;c++) LINES.push([0,1,2,3,4].map(r=>r*5+c));
+LINES.push([0,6,12,18,24]); LINES.push([4,8,12,16,20]);
+
+function validMask(card){
+  const d = drawnSet();
+  return card.grid.map((id,i)=> card.marks[i] && (id==="FREE" || d.has(id)));
+}
+function checkWin(card){
+  const v = validMask(card);
+  const all = idxs => idxs.every(i=>v[i]);
+  switch(S.pattern){
+    case "line":
+      for(const L of LINES) if(all(L)) return L;
+      return null;
+    case "x": {
+      const L = [0,6,12,18,24,4,8,16,20];
+      return all(L) ? L : null;
+    }
+    case "corners": {
+      const L=[0,4,20,24]; return all(L)?L:null;
+    }
+    case "blackout": {
+      const L=Array.from({length:25},(_,i)=>i); return all(L)?L:null;
+    }
+  }
+  return null;
+}
+function sweepWinners(){
+  if(!S.cards.length) return;          // caller device holds no cards
+  const winners = [];
+  S.cards.forEach(card=>{
+    if(card.won) return;
+    const line = checkWin(card);
+    if(line){ card.won=true; card.winCells=line; winners.push(card); }
+  });
+  if(winners.length){
+    renderCards();
+    save();
+    runProveQueue(winners.slice(), ()=>{
+      $("winNames").textContent = winners.map(c=>c.name).join("  ·  ") +
+        (winners.length>1 ? " have it!" : " has it!");
+      show("winOv"); confettiBurst(); fanfare();
+    });
+  }
+}
+
+/* ---- prove-it walk ---- */
+function runProveQueue(queue, done){
+  if(!S.prove || !queue.length){ done(); return; }
+  const card = queue.shift();
+  const cells = card.winCells.filter(i=>card.grid[i]!=="FREE");
+  let k = 0;
+  const step = ()=>{
+    if(k>=cells.length){ hide("proveOv"); runProveQueue(queue, done); return; }
+    const it = itemById(card.grid[cells[k]]);
+    const col = card.grid[cells[k]][0];
+    $("proveCard").innerHTML =
+      '<div class="catlab">Prove it, '+esc(card.name)+' — '+(k+1)+' of '+cells.length+'</div>'+
+      '<div class="bigball" style="background:radial-gradient(circle at 35% 30%,'+shade(CATCOLOR[col],40)+','+CATCOLOR[col]+' 60%,'+shade(CATCOLOR[col],-35)+')">'+col+'</div>'+
+      '<div class="answer" style="font-size:24px">'+esc(it[0])+'</div>'+
+      '<div class="teachnote">Tell the class one thing about this. The class can help!</div>'+
+      '<div class="refchip">Backup: '+esc(it[4])+'</div>'+
+      '<div class="btnrow"><button class="gbtn" id="proveNext">'+(k===cells.length-1?"Finished — claim it!":"Next square")+'</button></div>';
+    $("proveNext").onclick = ()=>{ click(); k++; step(); };
+    show("proveOv");
+  };
+  step();
+}
+
+/* ============================= RENDER =================================== */
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)+amt, g=((n>>8)&255)+amt, b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return "rgb("+r+","+g+","+b+")";
+}
+function show(id){ $(id).classList.add("show"); }
+function hide(id){ $(id).classList.remove("show"); }
+
+function renderCards(){
+  const box = $("cards"); box.innerHTML = "";
+  S.cards.forEach((card,ci)=>{
+    const el = document.createElement("div");
+    el.className = "card"+(card.won?" won":"");
+    const head = document.createElement("div"); head.className="chead";
+    const nm = document.createElement("span"); nm.className="cname"; nm.textContent=card.name;
+    nm.title = "Click to rename";
+    nm.onclick = ()=>{ const v = prompt("Player name:", card.name); if(v){ card.name=v.trim()||card.name; save(); renderCards(); } };
+    const won = document.createElement("span"); won.className="cwon"; won.textContent="NEPHI!";
+    head.appendChild(nm); head.appendChild(won); el.appendChild(head);
+    const g = document.createElement("div"); g.className="grid";
+    COLS.forEach(c=>{
+      const h=document.createElement("div"); h.className="hcell"; h.style.background=CATCOLOR[c]; h.textContent=c; g.appendChild(h);
+    });
+    card.grid.forEach((id,i)=>{
+      const cell=document.createElement("div");
+      if(id==="FREE"){
+        cell.className="cell free"+(card.marks[i]?" marked":"");
+        cell.innerHTML="✦<small>CHRIST</small>";
+      }else{
+        cell.className="cell"+(card.marks[i]?" marked":"")+(card.winCells.includes(i)?" winline":"");
+        cell.textContent = itemById(id)[1];
+        cell.onclick=()=>{
+          card.marks[i]=!card.marks[i];
+          if(card.marks[i]) thock();
+          if(!card.marks[i] && card.won){ /* un-marking a won card leaves it won */ }
+          save(); renderCards(); sweepWinners();
+        };
+      }
+      g.appendChild(cell);
+    });
+    el.appendChild(g); box.appendChild(el);
+  });
+}
+
+function renderFlash(){
+  const box = (S.role==="player") ? $("playerFlash") : $("flashboard");
+  box.innerHTML="";
+  const d = drawnSet();
+  const last = S.drawn[S.drawn.length-1];
+  COLS.forEach(c=>{
+    const row=document.createElement("div"); row.className="frow";
+    const lt=document.createElement("div"); lt.className="fletter"; lt.style.background=CATCOLOR[c]; lt.textContent=c;
+    const chips=document.createElement("div"); chips.className="fchips";
+    DATA[S.tier][c].forEach((it,i)=>{
+      const id=c+i;
+      const ch=document.createElement("span");
+      ch.className="chip"+(d.has(id)?" lit":"")+(id===last?" pulse":"");
+      if(d.has(id)) ch.style.background=CATCOLOR[c];
+      ch.textContent=it[1];
+      chips.appendChild(ch);
+    });
+    row.appendChild(lt); row.appendChild(chips); box.appendChild(row);
+  });
+  updateMeta();
+}
+function updateMeta(){
+  const total = S.order.length;
+  const ballNo = $("ballNo");
+  if(ballNo) ballNo.textContent = S.drawn.length;
+  if(S.drawn.length >= total){
+    $("drawBtn").disabled = true;
+    $("drawMeta").textContent = "All "+total+" called — every square is live.";
+  }else{
+    $("drawBtn").disabled = busy;
+    const last = S.drawn.length ? itemById(S.drawn[S.drawn.length-1]) : null;
+    $("drawMeta").textContent = (last ? "Last called: "+last[0]+"  ·  " : "") + S.drawn.length+" of "+total+" called";
+  }
+}
+
+/* ============================= REVEAL FLOW ============================== */
+function ballHTML(col, inner){
+  const c=CATCOLOR[col];
+  return '<div class="bigball" style="background:radial-gradient(circle at 35% 30%,'+shade(c,40)+','+c+' 60%,'+shade(c,-35)+')">'+inner+'</div>';
+}
+function openReveal(id){
+  currentItem = id;
+  if(S.guess) revealStage("hint1"); else revealStage("answer");
+  show("revealOv");
+}
+function revealStage(stage){
+  const id = currentItem, col=id[0], it=itemById(id);
+  const card = $("revealCard");
+  if(stage==="hint1" || stage==="hint2"){
+    const hint = stage==="hint1" ? it[2] : it[3];
+    card.innerHTML =
+      '<div class="catlab">'+col+' · '+CATNAME[col]+'</div>'+
+      ballHTML(col,"?")+
+      '<div class="hinttag">'+(stage==="hint1"?"Hint":"Bigger hint")+'</div>'+
+      '<div class="story">'+esc(hint)+'</div>'+
+      '<div class="teachnote">Let the class guess out loud. Reveal whenever you like.</div>'+
+      '<div class="btnrow">'+
+        (stage==="hint1" ? '<button class="sbtn" id="moreHint">Bigger hint</button>' : '')+
+        '<button class="gbtn" id="revealNow">Reveal the answer</button>'+
+      '</div>';
+    const mh=$("moreHint"); if(mh) mh.onclick=()=>{ click(); revealStage("hint2"); };
+    $("revealNow").onclick=()=>{ chime(); revealStage("answer"); };
+  }else{
+    card.innerHTML =
+      '<div class="catlab">'+col+' · '+CATNAME[col]+'</div>'+
+      ballHTML(col,col)+
+      '<div class="answer">'+esc(it[0])+'</div>'+
+      '<div class="refchip">Look it up: '+esc(it[4])+'</div>'+
+      '<div id="storySlot"></div>'+
+      '<div class="btnrow">'+
+        '<button class="sbtn" id="storyBtn">The story</button>'+
+        '<button class="gbtn" id="doneBtn">Done — mark your cards!</button>'+
+      '</div>';
+    $("storyBtn").onclick=()=>{
+      click();
+      $("storySlot").innerHTML='<div class="story">'+esc(it[3])+'</div>'+
+        '<div class="teachnote">Read it aloud — or ask someone who marked it to tell it.</div>';
+      $("storyBtn").style.display="none";
+    };
+    $("doneBtn").onclick=finishReveal;
+  }
+}
+function finishReveal(){
+  click();
+  hide("revealOv");
+  S.drawn.push(currentItem);
+  currentItem=null; busy=false;
+  renderFlash(); save(); sweepWinners();
+}
+
+/* ============================= TUMBLER ================================== */
+const cv = $("drum"), ctx = cv.getContext("2d");
+const DPR = Math.min(2, window.devicePixelRatio||1);
+cv.width = 460*DPR; cv.height = 560*DPR; ctx.scale(DPR,DPR);
+const CX=230, CY=238, R=176, BR=13;
+let balls=[], drumAngle=0, drumAV=0.35, targetAV=0.35;
+let guided=null;                 // {b, t, dur, p0..p3, onDone}
+let trayBall=null;               // {col} last drawn resting in tray
+let spinning=false;
+let lastTick=0;
+
+function makeBalls(n){
+  balls=[];
+  const letters=[];
+  for(let i=0;i<n;i++) letters.push(COLS[i%5]);
+  shuffle(letters).forEach((L,i)=>{
+    const a=Math.random()*Math.PI*2, d=Math.random()*(R-40);
+    balls.push({x:CX+Math.cos(a)*d, y:CY+Math.sin(a)*d*0.5, vx:0, vy:0, L});
+  });
+}
+function stepPhysics(dt){
+  drumAV += (targetAV-drumAV)*Math.min(1,dt*3);
+  drumAngle += drumAV*dt;
+  const agit = spinning ? 2600 : 0;
+  for(const b of balls){
+    b.vy += 1400*dt;
+    if(agit){ b.vx += (Math.random()-0.5)*agit*dt; b.vy += (Math.random()-0.72)*agit*dt; }
+    const sp=Math.hypot(b.vx,b.vy);
+    if(sp>950){ b.vx*=950/sp; b.vy*=950/sp; }
+    b.x += b.vx*dt; b.y += b.vy*dt;
+  }
+  // spokes
+  for(let k=0;k<3;k++){
+    const a=drumAngle+k*2.0944, dx=Math.cos(a), dy=Math.sin(a);
+    for(const b of balls){
+      const rx=b.x-CX, ry=b.y-CY;
+      let t=rx*dx+ry*dy; if(t<14||t>R-8) continue;
+      const px=CX+dx*t, py=CY+dy*t;
+      const ox=b.x-px, oy=b.y-py, d=Math.hypot(ox,oy);
+      if(d<BR+4 && d>0.001){
+        const nx=ox/d, ny=oy/d;
+        b.x=px+nx*(BR+4); b.y=py+ny*(BR+4);
+        const perp = drumAV>=0 ? [-dy,dx] : [dy,-dx];
+        const s=Math.abs(drumAV)*t;
+        b.vx += perp[0]*s*0.55 + nx*40;
+        b.vy += perp[1]*s*0.55 + ny*40;
+      }
+    }
+  }
+  // walls
+  for(const b of balls){
+    const rx=b.x-CX, ry=b.y-CY, d=Math.hypot(rx,ry);
+    if(d>R-BR){
+      const nx=rx/d, ny=ry/d;
+      b.x=CX+nx*(R-BR); b.y=CY+ny*(R-BR);
+      const vn=b.vx*nx+b.vy*ny;
+      if(vn>0){
+        b.vx-=nx*vn*1.55; b.vy-=ny*vn*1.55;
+        if(spinning && vn>140 && S && S.sound){
+          const now=performance.now();
+          if(now-lastTick>45){ lastTick=now; tickNoise(); }
+        }
+      }
+      const tx=-ny, ty=nx, surf=drumAV*(R-BR), vt=b.vx*tx+b.vy*ty;
+      b.vx += tx*(surf-vt)*0.25; b.vy += ty*(surf-vt)*0.25;
+    }
+  }
+  // pair collisions
+  for(let i=0;i<balls.length;i++) for(let j=i+1;j<balls.length;j++){
+    const a=balls[i], b=balls[j];
+    const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy);
+    if(d<BR*2 && d>0.001){
+      const nx=dx/d, ny=dy/d, ov=(BR*2-d)/2;
+      a.x-=nx*ov; a.y-=ny*ov; b.x+=nx*ov; b.y+=ny*ov;
+      const va=a.vx*nx+a.vy*ny, vb=b.vx*nx+b.vy*ny;
+      if(va-vb>0){
+        const e=0.62, ia=(vb-va)*e;
+        a.vx+=nx*ia; a.vy+=ny*ia; b.vx-=nx*ia; b.vy-=ny*ia;
+      }
+    }
+  }
+  // guided exit ball
+  if(guided){
+    guided.t += dt/guided.dur;
+    const t=Math.min(1,guided.t), u=1-t, tt=t*t;
+    const g=guided;
+    g.b.x = u*u*u*g.p0[0] + 3*u*u*t*g.p1[0] + 3*u*tt*g.p2[0] + tt*t*g.p3[0];
+    g.b.y = u*u*u*g.p0[1] + 3*u*u*t*g.p1[1] + 3*u*tt*g.p2[1] + tt*t*g.p3[1];
+    if(t>=1){
+      const done=g.onDone, col=g.b.L;
+      balls.splice(balls.indexOf(g.b),1);
+      guided=null; trayBall={col};
+      done();
+    }
+  }
+}
+function drawBall(x,y,col,letter,r){
+  const c=CATCOLOR[col]||col;
+  const g=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.15,x,y,r);
+  g.addColorStop(0,shade(c,55)); g.addColorStop(0.55,c); g.addColorStop(1,shade(c,-40));
+  ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fillStyle=g; ctx.fill();
+  ctx.fillStyle="#fff"; ctx.font="bold "+Math.round(r*0.85)+"px Georgia";
+  ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(letter,x,y+0.5);
+}
+function render(){
+  ctx.clearRect(0,0,460,560);
+  // pedestal
+  ctx.fillStyle="#1a2438";
+  ctx.beginPath(); ctx.moveTo(196,404); ctx.lineTo(264,404); ctx.lineTo(288,548); ctx.lineTo(172,548); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="#2c3a56"; ctx.stroke();
+  // chute
+  ctx.lineCap="round";
+  ctx.strokeStyle="#101827"; ctx.lineWidth=26;
+  ctx.beginPath(); ctx.moveTo(230,432); ctx.quadraticCurveTo(214,505,152,512); ctx.stroke();
+  ctx.strokeStyle="#1c2940"; ctx.lineWidth=16;
+  ctx.beginPath(); ctx.moveTo(230,432); ctx.quadraticCurveTo(214,505,152,512); ctx.stroke();
+  ctx.lineWidth=1;
+  // tray
+  ctx.beginPath(); ctx.ellipse(130,522,42,17,0,0,7);
+  ctx.fillStyle="#0c1320"; ctx.fill();
+  ctx.strokeStyle="#d4a944"; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
+  if(trayBall) drawBall(130,514,trayBall.col,trayBall.col,BR+2);
+  // drum interior
+  const bg=ctx.createRadialGradient(CX,CY-30,40,CX,CY,R);
+  bg.addColorStop(0,"#182a48"); bg.addColorStop(1,"#0b1220");
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,7); ctx.fillStyle=bg; ctx.fill();
+  // spokes
+  ctx.strokeStyle="#24334e"; ctx.lineWidth=5; ctx.lineCap="round";
+  for(let k=0;k<3;k++){
+    const a=drumAngle+k*2.0944;
+    ctx.beginPath(); ctx.moveTo(CX,CY);
+    ctx.lineTo(CX+Math.cos(a)*(R-6), CY+Math.sin(a)*(R-6)); ctx.stroke();
+  }
+  ctx.lineWidth=1;
+  // balls
+  for(const b of balls) drawBall(b.x,b.y,b.L,b.L,BR);
+  // hub
+  ctx.beginPath(); ctx.arc(CX,CY,15,0,7); ctx.fillStyle="#2c3a56"; ctx.fill();
+  ctx.beginPath(); ctx.arc(CX,CY,6,0,7); ctx.fillStyle="#d4a944"; ctx.fill();
+  // glass shine
+  ctx.beginPath(); ctx.arc(CX,CY,R-8,-2.4,-1.1);
+  ctx.strokeStyle="rgba(255,255,255,0.10)"; ctx.lineWidth=13; ctx.stroke(); ctx.lineWidth=1;
+  // rim
+  ctx.beginPath(); ctx.arc(CX,CY,R+5,0,7);
+  ctx.strokeStyle="#3f5273"; ctx.lineWidth=9; ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX,CY,R+10,0,7);
+  ctx.strokeStyle="#d4a944"; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
+}
+let prevT=performance.now();
+function loop(t){
+  let dt=(t-prevT)/1000; prevT=t;
+  if(dt>0.05) dt=0.05;
+  const sub=2;
+  for(let i=0;i<sub;i++) stepPhysics(dt/sub);
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function startDraw(){
+  if(busy || !S || S.drawn.length>=S.order.length) return;
+  ensureAC();
+  busy=true; updateMeta();
+  spinning=true; targetAV=8; whoosh();
+  const id = S.order[S.drawn.length];   // deterministic from the game code
+  setTimeout(()=>{
+    // choose exit ball with matching letter, closest to bottom gate
+    const col=id[0];
+    let pool=balls.filter(b=>b.L===col && b!==((guided||{}).b));
+    if(!pool.length) pool=balls.slice();
+    let best=pool[0], bd=1e9;
+    for(const b of pool){
+      const d=Math.hypot(b.x-CX, b.y-(CY+R-20));
+      if(d<bd){bd=d; best=b;}
+    }
+    best.L=col;
+    spinning=false; targetAV=0.35;
+    guided={b:best, t:0, dur:1.0,
+      p0:[best.x,best.y], p1:[230,415], p2:[226,500], p3:[130,512],
+      onDone:()=>{ pop(); setTimeout(()=>openReveal(id), 320); }};
+  },1700);
+}
+
+/* ============================= AUDIO ==================================== */
+let AC=null;
+function ensureAC(){
+  if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(AC && AC.state==="suspended") AC.resume();
+}
+function env(g,t0,a,d,peak){
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.linearRampToValueAtTime(peak,t0+a);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+a+d);
+}
+function tone(freq,type,a,d,peak,when){
+  if(!AC||!S||!S.sound) return;
+  const t0=AC.currentTime+(when||0);
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type||"sine"; o.frequency.value=freq;
+  o.connect(g); g.connect(AC.destination);
+  env(g,t0,a,d,peak); o.start(t0); o.stop(t0+a+d+0.05);
+}
+let noiseBuf=null;
+function getNoise(){
+  if(!noiseBuf){
+    noiseBuf=AC.createBuffer(1,AC.sampleRate*0.2,AC.sampleRate);
+    const ch=noiseBuf.getChannelData(0);
+    for(let i=0;i<ch.length;i++) ch[i]=Math.random()*2-1;
+  }
+  return noiseBuf;
+}
+function noiseHit(freq,dur,peak){
+  if(!AC||!S||!S.sound) return;
+  const t0=AC.currentTime;
+  const src=AC.createBufferSource(); src.buffer=getNoise();
+  const f=AC.createBiquadFilter(); f.type="bandpass"; f.frequency.value=freq; f.Q.value=1.4;
+  const g=AC.createGain();
+  src.connect(f); f.connect(g); g.connect(AC.destination);
+  env(g,t0,0.004,dur,peak); src.start(t0); src.stop(t0+dur+0.05);
+}
+function tickNoise(){ noiseHit(2100,0.05,0.10); }
+function click(){ tone(660,"triangle",0.004,0.06,0.12); }
+function thock(){ tone(300,"sine",0.004,0.09,0.22); noiseHit(900,0.04,0.08); }
+function pop(){ tone(320,"sine",0.005,0.12,0.3); tone(170,"sine",0.005,0.15,0.2); noiseHit(1400,0.05,0.12); }
+function whoosh(){ noiseHit(500,0.5,0.14); }
+function chime(){ tone(880,"sine",0.01,0.4,0.18); tone(1318.5,"sine",0.01,0.5,0.13); }
+function fanfare(){
+  [392,523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+    tone(f,"triangle",0.01,0.35,0.22,i*0.12);
+    tone(f/2,"sine",0.01,0.35,0.12,i*0.12);
+  });
+  setTimeout(()=>noiseHit(3000,0.4,0.10),650);
+}
+
+/* ============================= CONFETTI ================================= */
+const cc=$("confetti"), cctx=cc.getContext("2d");
+let confs=[], confRunning=false;
+function confettiBurst(){
+  cc.width=innerWidth; cc.height=innerHeight;
+  const colors=["#d4a944","#e8c76a","#3b74c9","#c0503c","#3f8f5a","#7a5bbf","#f7f1e3"];
+  for(let i=0;i<180;i++){
+    const side=Math.random()<0.5;
+    confs.push({
+      x: side? -10 : innerWidth+10,
+      y: innerHeight*0.35+Math.random()*innerHeight*0.3,
+      vx:(side?1:-1)*(180+Math.random()*380),
+      vy:-260-Math.random()*300,
+      w:6+Math.random()*6, h:4+Math.random()*4,
+      a:Math.random()*7, va:(Math.random()-0.5)*12,
+      c:colors[i%colors.length], life:2.4+Math.random()
+    });
+  }
+  if(!confRunning){ confRunning=true; confPrev=performance.now(); requestAnimationFrame(confLoop); }
+}
+let confPrev=0;
+function confLoop(t){
+  const dt=Math.min(0.04,(t-confPrev)/1000); confPrev=t;
+  cctx.clearRect(0,0,cc.width,cc.height);
+  confs=confs.filter(p=>p.life>0);
+  if(!confs.length){ confRunning=false; return; }
+  for(const p of confs){
+    p.life-=dt; p.vy+=700*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.a+=p.va*dt;
+    p.vx*=(1-0.6*dt);
+    cctx.save(); cctx.translate(p.x,p.y); cctx.rotate(p.a);
+    cctx.globalAlpha=Math.max(0,Math.min(1,p.life));
+    cctx.fillStyle=p.c; cctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    cctx.restore();
+  }
+  requestAnimationFrame(confLoop);
+}
+
+/* ============================= SETUP / WIRING =========================== */
+let setupTier="primary";
+let pendingRole="solo";
+
+/* Roles differ only in what this device shows — the game itself is identical,
+   because the code seeds both the cards and the draw order on every device. */
+function applyRole(){
+  const caller = S.role==="caller", player = S.role==="player";
+  $("joinBanner").classList.toggle("on", caller);
+  $("syncBar").classList.toggle("on", player);
+  document.querySelector(".machine").style.display = player ? "none" : "";
+  $("cards").style.display = caller ? "none" : "";
+  document.querySelector(".layout").style.gridTemplateColumns = (caller||player) ? "1fr" : "";
+  if(caller){
+    $("bannerCode").textContent = S.code;
+    // the caller's own flashboard is the room's dashboard, so give it room
+    document.querySelector(".machine").style.maxWidth = "560px";
+    document.querySelector(".machine").style.margin = "0 auto";
+  }
+  if(player){
+    $("sbCode").textContent = S.code;
+    $("boardToggle").style.display = "inline-block";
+    $("boardToggle").textContent = "Called list: "+(S.showBoard?"On":"Off");
+    $("playerBoard").style.display = S.showBoard ? "" : "none";
+  }
+}
+
+/* A player advances their own device; the item is identical to the caller's
+   because both read S.order[n]. */
+function playerAdvance(n){
+  const target = Math.max(0, Math.min(S.order.length, n));
+  if(target === S.drawn.length) return;
+  const goingForward = target > S.drawn.length;
+  S.drawn = S.order.slice(0, target);
+  renderFlash(); renderPlayerLast(); save(); sweepWinners();
+  if(goingForward){ pop(); }
+}
+function renderPlayerLast(){
+  $("sbBall").textContent = S.drawn.length;
+  const slot = $("playerLast");
+  if(!slot) return;
+  if(!S.drawn.length){
+    slot.innerHTML = '<div class="plEmpty">Waiting for the first ball…</div>';
+    return;
+  }
+  const id = S.drawn[S.drawn.length-1], col=id[0], it=itemById(id);
+  slot.innerHTML =
+    '<div class="plBall" style="background:radial-gradient(circle at 35% 30%,'+
+      shade(CATCOLOR[col],40)+','+CATCOLOR[col]+' 60%,'+shade(CATCOLOR[col],-35)+')">'+col+'</div>'+
+    '<div class="plText"><span class="plLab">Ball '+S.drawn.length+' · '+CATNAME[col]+'</span>'+
+    '<span class="plName">'+esc(it[0])+'</span>'+
+    '<span class="plRef">'+esc(it[4])+'</span></div>';
+}
+
+function renderNameInputs(){
+  const n=+$("playerSel").value, box=$("nameInputs"); box.innerHTML="";
+  for(let i=0;i<n;i++){
+    const inp=document.createElement("input");
+    inp.type="text"; inp.placeholder="Player "+(i+1); inp.id="pname"+i;
+    box.appendChild(inp);
+  }
+}
+$("playerSel").onchange=renderNameInputs;
+$("tierPrimary").onclick=()=>{ setupTier="primary"; $("tierPrimary").classList.add("sel"); $("tierStudy").classList.remove("sel"); };
+$("tierStudy").onclick=()=>{ setupTier="study"; $("tierStudy").classList.add("sel"); $("tierPrimary").classList.remove("sel"); };
+
+function startGame(state){
+  S=state;
+  hide("setupOv"); hide("joinOv"); hide("roleOv");
+  makeBalls(Math.max(12, 40-S.drawn.length));
+  trayBall = S.drawn.length ? {col:S.drawn[S.drawn.length-1][0]} : null;
+  $("soundBtn").textContent = "Sound: "+(S.sound?"On":"Off");
+  applyRole();
+  renderCards(); renderFlash();
+  if(S.role==="player") renderPlayerLast();
+  save();
+}
+
+/* role picker */
+function pickRole(role){
+  click(); pendingRole=role;
+  hide("roleOv");
+  if(role==="player"){ $("joinCode").value=""; $("joinErr").textContent=""; show("joinOv"); $("joinCode").focus(); return; }
+  $("setupTitle").textContent = role==="caller" ? "Set up the game" : "NEPHI BINGO";
+  $("setupSub").textContent = role==="caller"
+    ? "Players will join with the code on the next screen"
+    : "Names · Events · Places · Holy things · Ideas";
+  $("soloOnly").style.display = role==="caller" ? "none" : "";
+  $("proveRow").style.display = role==="caller" ? "none" : "";
+  $("startBtn").textContent = role==="caller" ? "Open the game" : "Start the game";
+  show("setupOv");
+}
+$("roleCaller").onclick=()=>{ ensureAC(); pickRole("caller"); };
+$("rolePlayer").onclick=()=>{ ensureAC(); pickRole("player"); };
+$("roleSolo").onclick=()=>{ ensureAC(); pickRole("solo"); };
+$("setupBack").onclick=()=>{ click(); hide("setupOv"); show("roleOv"); };
+$("joinBack").onclick=()=>{ click(); hide("joinOv"); show("roleOv"); };
+
+$("joinBtn").onclick=()=>{
+  ensureAC();
+  const code = normCode($("joinCode").value);
+  if(!code){
+    $("joinErr").textContent = "That code doesn't look right — it's NEPHI- and four digits.";
+    return;
+  }
+  const no = Math.max(1, Math.min(999, parseInt($("joinCardNo").value,10)||1));
+  const nm = ($("joinName").value||"").trim() || "Card "+no;
+  click();
+  startGame(newState({
+    role:"player", code, tier:$("joinTier").value, pattern:"line",
+    players:[nm], cardNos:[no], guess:false, prove:false, sound:true, showBoard:true
+  }));
+};
+$("joinCode").addEventListener("keydown",e=>{ if(e.key==="Enter") $("joinBtn").click(); });
+
+$("startBtn").onclick=()=>{
+  ensureAC(); click();
+  let players=[], cardNos=[];
+  if(pendingRole==="caller"){ players=[]; }
+  else{
+    const n=+$("playerSel").value;
+    for(let i=0;i<n;i++){
+      const v=($("pname"+i).value||"").trim();
+      players.push(v||"Player "+(i+1)); cardNos.push(i+1);
+    }
+  }
+  startGame(newState({
+    role:pendingRole, tier:setupTier, pattern:$("patternSel").value, players, cardNos,
+    guess:$("guessTog").checked, prove:$("proveTog").checked, sound:true
+  }));
+};
+$("resumeBtn").onclick=()=>{ ensureAC(); click(); const s=loadSaved(); if(s) startGame(s); };
+
+/* player sync controls */
+$("sbNext").onclick=()=>{ ensureAC(); playerAdvance(S.drawn.length+1); };
+$("sbJumpBtn").onclick=()=>{
+  ensureAC();
+  const v=parseInt($("sbJump").value,10);
+  if(!isNaN(v)) playerAdvance(v);
+  $("sbJump").value="";
+};
+$("sbJump").addEventListener("keydown",e=>{ if(e.key==="Enter") $("sbJumpBtn").click(); });
+$("boardToggle").onclick=()=>{
+  if(!S) return; click();
+  S.showBoard=!S.showBoard;
+  $("boardToggle").textContent="Called list: "+(S.showBoard?"On":"Off");
+  $("playerBoard").style.display=S.showBoard?"":"none";
+  save();
+};
+
+$("drawBtn").onclick=startDraw;
+document.addEventListener("keydown",e=>{
+  if(e.code!=="Space" || !S || busy) return;
+  if(document.querySelector(".ov.show")) return;
+  if(/^(INPUT|SELECT|TEXTAREA)$/.test((e.target.tagName||""))) return;
+  e.preventDefault();
+  if(S.role==="player") playerAdvance(S.drawn.length+1); else startDraw();
+});
+$("soundBtn").onclick=()=>{ if(!S) return; ensureAC(); S.sound=!S.sound;
+  $("soundBtn").textContent="Sound: "+(S.sound?"On":"Off"); save(); click(); };
+$("newBtn").onclick=()=>{
+  if(S && S.drawn.length && !confirm("Start a new game? The current game will be lost.")) return;
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+  S=null; busy=false; guided=null; trayBall=null;
+  $("resumeBtn").style.display="none";
+  $("joinBanner").classList.remove("on");
+  $("syncBar").classList.remove("on");
+  $("boardToggle").style.display="none";
+  document.querySelector(".machine").style.display="";
+  document.querySelector(".machine").style.maxWidth="";
+  document.querySelector(".machine").style.margin="";
+  $("cards").style.display="";
+  $("playerLast").innerHTML="";
+  $("flashboard").innerHTML=""; $("playerFlash").innerHTML="";
+  document.querySelector(".layout").style.gridTemplateColumns="";
+  hide("setupOv"); hide("joinOv"); show("roleOv");
+};
+$("helpBtn").onclick=()=>{ show("helpOv"); };
+$("helpClose").onclick=()=>{ click(); hide("helpOv"); };
+$("keepBtn").onclick=()=>{ click(); hide("winOv"); };
+$("winNewBtn").onclick=()=>{ hide("winOv"); $("newBtn").onclick(); };
+
+/* boot */
+renderNameInputs();
+makeBalls(40);
+(function(){
+  const s=loadSaved();
+  if(s && (s.drawn.length || s.cards.some(c=>c.marks.filter(Boolean).length>1)))
+    $("resumeBtn").style.display="inline-block";
+})();
+</script>
+</body>
+</html>

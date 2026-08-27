@@ -12,6 +12,34 @@ silently reverts — so change the source, rebuild, and republish the page.
 If you are here to change how the game works, you are in the wrong repo; say
 so and move.
 
+## An iOS version is intended (2026-08-27)
+
+Ryan intends to make NEPHI Bingo a **native iOS game**, not just a web page.
+That is a stated intention, not a schedule — nothing is built and nothing is
+sequenced yet. It is written down here because this repo is the first place
+anyone looks when they think about this game, and an intention nobody
+recorded is an intention the next session re-invents from scratch.
+
+Three things follow from it, and they matter more than the plan:
+
+- **The iOS app does not get built here, or in the-butchery.** Apps and
+  games people install belong in **butcher-shop**
+  (`~/repos/butcher-shop`, https://github.com/ryanxbutcher/butcher-shop),
+  which is the estate's storefront repo. Its notes on this game live at
+  `apps/nephi-bingo/INTENT.md`. Butcher's Hot Tip goes through the iOS
+  pipeline first, on purpose — signing, provisioning and review are the
+  expensive unknowns, and they should be paid for once on the smaller app.
+- **The web version is not a prototype to be replaced.** It works, it is
+  live, and it is the version that runs in a chapel basement on somebody
+  else's Android phone with no App Store account. It keeps being maintained
+  after an iOS app exists. Two front ends, one game.
+- **`nephi-bingo.html` is the specification.** The rules, the two content
+  tiers, the N·E·P·H·I columns, the win patterns, and — the load-bearing
+  part — the **seeded-derivation multiplayer**, where the game code alone
+  determines every card and the whole draw order so devices agree with no
+  network between them. An iOS port that reimplements the game but not that
+  derivation is a different game. Read the source before designing the app.
+
 ## Leaving `main` good
 
 Ryan is the sole contributor. There is no reviewer and no PR queue.

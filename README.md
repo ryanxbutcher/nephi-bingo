@@ -27,7 +27,18 @@ URL is not a secret — treat it as unlisted rather than private.
 
 ## Where it is edited
 
-The canonical copy lives in the private `butcher-block` repo at
-`nephi-bingo/nephi-bingo.html`. This repo is the published copy: `index.html`
-here is that file plus the one `noindex` meta tag. Edit it there, republish
-here — a deliberate step, so a work-in-progress never goes live by accident.
+The canonical copy lives in the private `the-butchery` repo at
+`projects/nephi-bingo/nephi-bingo.html`. This repo is the published copy:
+`index.html` here is that file plus the one `noindex` meta tag. Edit it
+there, republish here — a deliberate step, so a work-in-progress never goes
+live by accident.
+
+(That path was `butcher-block/nephi-bingo/` until the 2026-08-22
+re-architecture split that repo; corrected 2026-08-27.)
+
+## A native iOS version is planned
+
+Ryan intends to build NEPHI Bingo as an iOS game as well. It will live in
+the `butcher-shop` repo, not this one, and it will not replace this page —
+the web version is what works on any device in a room with no signal and no
+App Store account. See `CLAUDE.md` here for the details that carry over.

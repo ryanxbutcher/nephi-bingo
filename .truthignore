@@ -1,0 +1,7 @@
+# Deliberate fictions and foreign-machine claims the polygraph must not flag.
+# Globs match files; token= lines match exact strings anywhere.
+
+# A git revision range, not a path. It is in the "Leaving main good" section
+# that every estate CLAUDE.md carries verbatim, so it is a finding in every
+# repo until each one says so here (2026-08-27).
+token=origin/main..HEAD

@@ -39,6 +39,20 @@ re-architecture split that repo; corrected 2026-08-27.)
 ## A native iOS version is planned
 
 Ryan intends to build NEPHI Bingo as an iOS game as well. It will live in
-the `butcher-shop` repo, not this one, and it will not replace this page —
-the web version is what works on any device in a room with no signal and no
-App Store account. See `CLAUDE.md` here for the details that carry over.
+the `butcher-shop` repo (notes at `apps/nephi-bingo/INTENT.md`), not this
+one, and it will not replace this page — the web version is what works on
+any device in a room with no signal and no App Store account. Two front
+ends, one game.
+
+**The source file is the specification.** The rules, the two content tiers,
+the N·E·P·H·I columns, the win patterns, and — the load-bearing part — the
+seeded derivation, where the game code alone determines every card and the
+whole draw order so devices agree with no network between them. A port that
+reimplements the game but not that derivation is a different game. Read the
+source before designing anything.
+
+## Working on this repo
+
+`main` is literally the live site, so a branch here is a change nobody can
+see. Commit and push as each piece lands, merge any branch back into `main`
+yourself, and delete it on both ends when you do.

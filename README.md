@@ -55,4 +55,7 @@ source before designing anything.
 
 `main` is literally the live site, so a branch here is a change nobody can
 see. Commit and push as each piece lands, merge any branch back into `main`
-yourself, and delete it on both ends when you do.
+yourself, and delete it on both ends when you do. Never rewrite history that
+is already on GitHub — no `--force`, no rebase or amend of pushed commits.
+pi-brain pulls this repo on a timer, and a rewrite on 2026-09-03 left that
+clone with no common ancestor and a finding in the morning report.

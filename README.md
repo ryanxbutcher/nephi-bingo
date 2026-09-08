@@ -2,7 +2,7 @@
 
 A Book of Mormon study game in a single HTML file. Play it here:
 
-**https://nephibingo.carrd.co** — or the older copy at
+**https://nephibingo.thebutchershop.ai** — or the older copy at
 **https://ryanxbutcher.github.io/nephi-bingo/** (both are the same game; the
 Carrd one is where it lives from 2026-09-08)
 

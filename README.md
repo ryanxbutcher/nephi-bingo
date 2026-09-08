@@ -2,7 +2,9 @@
 
 A Book of Mormon study game in a single HTML file. Play it here:
 
-**https://ryanxbutcher.github.io/nephi-bingo/**
+**https://nephibingo.carrd.co** — or the older copy at
+**https://ryanxbutcher.github.io/nephi-bingo/** (both are the same game; the
+Carrd one is where it lives from 2026-09-08)
 
 No server, no internet, no install. Open the page — or the file — in any
 browser and play. Built for Primary classes, Sunday school, and family study.
